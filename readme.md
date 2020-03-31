@@ -50,8 +50,8 @@ You may find it helpful to read the following overview before jumping in to the 
 ## Overview of API access management
 
 An API access management workflow typically includes the following components:
-* An API
-* An API gateway
+* An REST API service
+* An API Gateway
 * An application
 * An OAuth authorization server
 * An identity provider
@@ -163,12 +163,12 @@ If you click on the "show me" links now, they won't work, because we haven't set
 
 Each API Gateway accommodates external OAuth providers slightly differently. Follow the instructions in the 'gateways' folder of this repo for the gateway that you are using. Instructions are available for the following gateways:
 
-* Apigee
-* Amazon API gateway
-* Kong
-* Mulesoft
-* Software AG
-* Tyk
+* [Apigee](./gateways/apigee/readme.md)
+* [Amazon API gateway](./gateways/aws/readme.md)
+* [Kong](./gateways/kong/readme.md)
+* [Mulesoft](./gateways/mulesoft/readme.md)
+* [Software AG](./gateways/swag/readme.md)
+* [Tyk](./gateways/tyk/readme.md)
 
 Please note that I have provided a very simple solar system API here: https://okta-api-am.herokuapp.com
 
