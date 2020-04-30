@@ -1,0 +1,82 @@
+<!--
+    IMPORTANT:
+    - Policy elements can appear only within the <inbound>, <outbound>, <backend> section elements.
+    - To apply a policy to the incoming request (before it is forwarded to the backend service), place a corresponding policy element within the <inbound> section element.
+    - To apply a policy to the outgoing response (before it is sent back to the caller), place a corresponding policy element within the <outbound> section element.
+    - To add a policy, place the cursor at the desired insertion point and select a policy from the sidebar.
+    - To remove a policy, delete the corresponding policy statement from the policy document.
+    - Position the <base> element within a section element to inherit all policies from the corresponding section element in the enclosing scope.
+    - Remove the <base> element to prevent inheriting policies from the corresponding section element in the enclosing scope.
+    - Policies are applied in the order of their appearance, from the top down.
+    - Comments within policy elements are not supported and may disappear. Place your comments between policy elements or at a higher level scope.
+-->
+<policies>
+    <inbound>
+        <base />
+        <validate-jwt header-name="Authorization" failed-validation-httpcode="401" failed-validation-error-message="No Access Token in Request" output-token-variable-name="jwt">
+            <openid-config url="https://dev-972469.okta.com/oauth2/default/.well-known/openid-configuration" />
+            <audiences>
+                <audience>api://default</audience>
+            </audiences>
+            <issuers>
+                <issuer>https://dev-972469.okta.com/oauth2/default</issuer>
+            </issuers>
+        </validate-jwt>
+    </inbound>
+    <backend>
+        <base />
+    </backend>
+    <outbound>
+        <base />
+        <choose>
+            <when condition="@(((Jwt)context.Variables["jwt"]).Claims["scp"].Contains("http://myapp.com/scp/silver") || ((Jwt)context.Variables["jwt"]).Claims["scp"].Contains("http://myapp.com/scp/gold"))">
+                <return-response>
+                    <set-header name="X-SolarSystem-Level" exists-action="override">
+                        <value>@{
+                            string scope = "";
+                            if (((Jwt)context.Variables["jwt"]).Claims["scp"].Contains("http://myapp.com/scp/silver"))
+                            {
+                                scope += "http://myapp.com/scp/silver";
+                            }
+                            if (((Jwt)context.Variables["jwt"]).Claims["scp"].Contains("http://myapp.com/scp/gold"))
+                            {
+                                scope += ", http://myapp.com/scp/gold";
+                            }
+                            return scope;
+                        }</value>
+                    </set-header>
+                    <set-header name="Content-Type" exists-action="override">
+                        <value>application/json</value>
+                    </set-header>
+                    <set-body>@(context.Response.Body.As<string>(preserveContent: true))</set-body>
+                </return-response>
+            </when>
+            <otherwise>
+                <return-response>
+                    <set-status code="403" reason="Forbidden" />
+                    <set-header name="X-SolarSystem-Level" exists-action="override">
+                        <value>@{
+                            string scope = "";
+                            if (((Jwt)context.Variables["jwt"]).Claims["scp"].Contains("http://myapp.com/scp/silver"))
+                            {
+                                scope += "http://myapp.com/scp/silver";
+                            }
+                            if (((Jwt)context.Variables["jwt"]).Claims["scp"].Contains("http://myapp.com/scp/gold"))
+                            {
+                                scope += ", http://myapp.com/scp/gold";
+                            }
+                            return scope;
+                        }</value>
+                    </set-header>
+                    <set-header name="Content-Type" exists-action="override">
+                        <value>application/json</value>
+                    </set-header>
+                    <set-body>{msg:"Access Forbidden"}</set-body>
+                </return-response>
+            </otherwise>
+        </choose>
+    </outbound>
+    <on-error>
+        <base />
+    </on-error>
+</policies>
